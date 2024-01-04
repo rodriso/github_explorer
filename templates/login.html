@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap">
+    <title>Login</title>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form class="login-form" action="/login/" method="POST">
+            <label for="username">Usuario:</label>
+            <input type="text" name="username" value="{{ username }}" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" name="password" required>
+
+            <button>Login</button>
+            <p>¿No tienes cuenta? <a href="/register/">Registrate</a></p>
+        </form>
+    </div>
+</body>
+</html>
