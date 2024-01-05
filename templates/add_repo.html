@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Añadir repositorio</title>
+</head>
+<body>
+    <header>
+        <h1>Añadir repositorio</h1>
+    </header>
+
+    <div class="container">
+        <div class="login-container">
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <form class="repo-form" action="/add_repo/" method="POST">
+                <label for="repo_name">Nombre del repositorio:</label>
+                <input type="text" name="repo_name" value="{{ repo_name }}" required>
+
+                <button>Añadir repositorio</button>
+                <a href="/main/">Cancelar</a>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
+

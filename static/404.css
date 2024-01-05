@@ -1,0 +1,14 @@
+/* Estilos para la pagina 404 */
+.img404 {
+    width: 30%;
+    height: 30%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.text404 {
+    text-align: center;
+    font-size: 60px;
+    color: #000000;
+}

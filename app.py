@@ -34,7 +34,47 @@ def login():
 def main():
     if 'logged_in_user' not in session:
         return redirect(url_for('login'))
-    return render_template('main.html')
+    
+    get_repos = db.get_repo(db.get_user_id(session['logged_in_user']))
+    return render_template('main.html', repos=get_repos)
+
+@app.route('/add_repo/', methods=['POST', 'GET'])
+def add_repo():
+    error = None
+
+    # Check if the user is logged in
+    if 'logged_in_user' not in session:
+        flash('Please log in first.')
+        return redirect(url_for('login'))
+
+    # Check if the request method is POST
+    elif request.method == 'POST':
+        repo_name = request.form['repo_name']
+        user_id = db.get_user_id(session['logged_in_user'])
+
+        # Assuming db.add_repository returns True if added successfully
+        repository = db.add_repository(repo_name, user_id)
+        if repository == 1:
+            flash('Repository añadido')
+            # Get the updated list of repositories
+            repos = db.get_repo(user_id)
+            # Pass the updated list to the template
+            return render_template('main.html', repos=repos)
+
+        elif repository == 2:
+            error = 'Has introducido mal el nombre del repositorio (Recuerda el formato nombre/repositorio)'
+        elif repository == 3:
+            error = 'Error desconocido'
+        
+
+    # If not a POST request or if adding repository fails, render the add_repo.html template
+    return render_template('add_repo.html', error=error)
+
+@app.route("/details/<repo_id>")
+def details(repo_id):
+    repo = db.get_details_repositorie(repo_id)
+    return render_template('details.html', repo = repo)
+
 
 @app.route("/register/", methods=['POST', 'GET'])
 

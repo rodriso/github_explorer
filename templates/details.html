@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='details.css') }}">
+    <title>Detalles del Repositorio</title>
+</head>
+<body>
+
+    <h1>Detalles del Repositorio</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dueño</th>
+                <th>Número de Forks</th>
+                <th>Número de Estrellas</th>
+                <th>Rama por Defecto</th>
+                <th>Número de Open Issues</th>
+                <th>Fecha de Creación</th>
+                <th>Enlace GitHub</th>
+                <th>Añadir a Favoritos</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ repo.name }}</td>
+                <td>{{ repo.owner }}</td>
+                <td>{{ repo.forks }}</td>
+                <td>{{ repo.stars }}</td>
+                <td>{{ repo.default_branch }}</td>
+                <td>{{ repo.open_issues }}</td>
+                <td>{{ repo.creation_date }}</td>
+                <td><a href="{{ repo.github_link }}" target="_blank">Enlace</a></td>
+                <td>Añadir</td>
+            </tr>
+        </tbody>
+    </table>
+    <a class = "button" href="/main/">Volver a la página principal</a>
+</body>
+</html>
