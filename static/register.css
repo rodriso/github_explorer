@@ -1,0 +1,96 @@
+/* Estilos para el formulario de registro y añadir repositorio */
+header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+.error {
+    color: red;
+    font-size: large;
+    font-family: Arial, sans-serif;
+    margin-bottom: 10px;
+}
+
+body {
+    background: url("/static/logo.jpg") no-repeat center center fixed;
+    font-family: Arial, sans-serif;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 400px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+h1.add_repo {
+    text-align: center;
+    color: #ffffff;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: bold;
+}
+
+input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="submit"] {
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #555;
+}
+a.button {
+    padding: 10px 20px;
+    text-decoration: none;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    margin-right: 300px;
+  }
+  
+  a.button:hover {
+    background-color: #555;
+
+  }
+  button {
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    text-decoration: none;
+    background-color: #2a2c2c;
+    color: #fff;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #464747;
+    cursor: pointer;
+  }

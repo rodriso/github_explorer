@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
     <title>Añadir repositorio</title>
 </head>
 <body>
     <header>
-        <h1>Añadir repositorio</h1>
+        <h1 class="add_repo">Añadir repositorio</h1>
     </header>
 
     <div class="container">
@@ -18,11 +18,11 @@
             {% endif %}
 
             <form class="repo-form" action="/add_repo/" method="POST">
-                <label for="repo_name">Nombre del repositorio:</label>
+                <label for="repo_name">Introduce [usuario/nombre_repositorio]</label>
                 <input type="text" name="repo_name" value="{{ repo_name }}" required>
 
-                <button>Añadir repositorio</button>
-                <a href="/main/">Cancelar</a>
+                <button class = "button">Añadir repositorio</button>
+                <a class = "button" href="/main/">Cancelar</a>
             </form>
         </div>
     </div>

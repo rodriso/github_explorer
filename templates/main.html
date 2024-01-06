@@ -27,12 +27,33 @@
         {% endif %}
       {% endwith %}
     </div>
-
+    <!-- Sección para mostrar los top repositories -->
     <table>
+      <caption>Top Repositorios</caption>
+      <thead>
+          <tr>
+              <th>Nombre</th>
+              <th>Enlace</th>
+              <th>Nº de veces añadido</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for repo in top_repositories %}
+          <tr>
+              <td>{{ repo.name }}</td>
+              <td>{{ repo.github_link }}</td>
+              <td>{{ repo.times_added }}</td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+    <table>
+      <caption>Tu lista</caption>
       <thead>
         <tr>
           <th>Nombre</th>
-          <th>URL</th>
+          <th>Detalles</th>
+          <th>Ultima actualización</th>
         </tr>
       </thead>
       <tbody>
@@ -40,16 +61,18 @@
           {% for repo in repos %}
             <tr>
               <td>{{ repo.name }}</td>
-              <td><a href="/details/{{repo.id}}">Detalles</a></td>
+              <td><a href="/details/{{repo.id}}">Ver detalles</a></td>
+              <td>{{ repo.last_update.strftime("%Y-%m-%d %H:%M:%S") }}</td>
             </tr>
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="2" class="no-repos">No se han añadido repositorios.</td>
+            <td colspan="3" class="no-repos">No se han añadido repositorios.</td>
           </tr>
         {% endif %}
       </tbody>
     </table>
+
 
     <div class="actions">
       <a href='/logout' class="button">Logout</a>

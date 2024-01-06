@@ -1,28 +1,4 @@
-/* The alert message box */
-.alert {
-    padding: 25px;
-    background-color: #4caf50; 
-    color: white;
-
-  }
-  
-  /* The close button */
-  .closebtn {
-    color: white;
-    font-weight: bold;
-    float: right;
-    font-size: 22px;
-    line-height: 20px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  
-  /* When moving the mouse over the close button */
-  .closebtn:hover {
-    color: black;
-  }
-  /* main.css */
-
+ /* main.css */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
@@ -45,11 +21,13 @@ header {
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 40px;
 }
 
 th, td {
-  padding: 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
@@ -69,13 +47,13 @@ th {
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f8d7da;
-  color: #721c24;
+  color: #1aa14e;
   position: relative;
 }
 
 .closebtn {
   margin-left: 15px;
-  color: #721c24;
+  color: #0a3d20;
   font-weight: bold;
   float: right;
   font-size: 22px;
@@ -85,12 +63,14 @@ th {
 }
 
 .closebtn:hover {
-  color: #fff;
+  color: #1cab5a;
 }
 
 .no-repos {
   font-style: italic;
-  color: #888;
+  color: #3e3a3a;
+  text-align: center;
+  font-weight: bold;
 }
 
 .actions {
@@ -110,4 +90,17 @@ a.button {
 
 a.button:hover {
   background-color: #555;
+}
+caption {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+.button-container {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
 }

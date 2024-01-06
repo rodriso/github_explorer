@@ -21,7 +21,7 @@
                 <th>Número de Open Issues</th>
                 <th>Fecha de Creación</th>
                 <th>Enlace GitHub</th>
-                <th>Añadir a Favoritos</th>
+                <th>Actualizar repositorio</th>
             </tr>
         </thead>
         <tbody>
@@ -34,10 +34,17 @@
                 <td>{{ repo.open_issues }}</td>
                 <td>{{ repo.creation_date }}</td>
                 <td><a href="{{ repo.github_link }}" target="_blank">Enlace</a></td>
-                <td>Añadir</td>
+                    <form method="POST" action="/update_repository/{{ repo.id }}">
+                        <td>
+                            <button type="submit">Actualizar Repositorio</button>
+                        </td>
+                    </form>
+                </form>
             </tr>
         </tbody>
     </table>
-    <a class = "button" href="/main/">Volver a la página principal</a>
+    <div class="button-container">
+        <a class="button" href="/main/">Volver a la página principal</a>
+    </div>
 </body>
 </html>
