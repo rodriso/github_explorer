@@ -1,49 +1,52 @@
+"""
+
+Modulo SQLAlchemy
+Este modulo define la estructura de la base de datos y las funciones para interactuar con ella.
+
+"""
+
 import os
-from sqlalchemy import Column, Integer, String, ForeignKey,desc,DateTime
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey,desc,DateTime,create_engine
 from sqlalchemy.orm import DeclarativeBase,Session,relationship
 import requests
-from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 github_token = os.getenv("GITHUB_TOKEN")
 databasename = os.getenv("DATABASE_NAME")
 class Base(DeclarativeBase):
-    pass
+    """Base class for all database models."""
 
-#Tabla de users
 class Users(Base):
+    """User account model."""
     __tablename__ = "user_account"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     password = Column(String)
-    
-    # Define the relationship with the "repository" table
     repositorys = relationship(
-        "repository", back_populates="user", cascade="all, delete-orphan"
+        "Repository", back_populates="user", cascade="all, delete-orphan"
     )
-    
-    def __repr__(self):
-        return f"User(id={self.id!r}, name={self.name!r}, password={self.password!r})"
+
 #Tabla de repositorios
-class repository(Base):
+class Repository(Base):
+    """Repository model."""
     __tablename__ = "repositorys"
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    owner = Column(String) 
-    forks = Column(Integer)   
-    stars = Column(Integer)  
-    default_branch = Column(String) 
-    open_issues = Column(Integer)  
-    creation_date = Column(DateTime) 
-    github_link = Column(String)  
+    owner = Column(String)
+    forks = Column(Integer)
+    stars = Column(Integer)
+    default_branch = Column(String)
+    open_issues = Column(Integer)
+    creation_date = Column(DateTime)
+    github_link = Column(String)
     user_id = Column(Integer, ForeignKey("user_account.id"))
     user = relationship("Users", back_populates="repositorys")
     last_update = Column(DateTime)
     times_added = Column(Integer, default=0)
 
 #Creación de la base de datos
-from sqlalchemy import create_engine
 engine = create_engine(f"sqlite:///./{databasename}.db", echo=True)
 Base.metadata.create_all(engine)
 
@@ -58,68 +61,83 @@ def get_repo(user_id: int):
         user_id (int): The ID of the user.
     
     Returns:
-        list: A list of repository objects associated with the user. If the user ID is not found, an empty list is returned.
+        list: A list of repository objects associated with the user. 
+        If the user ID is not found, an empty list is returned.
     """
     with Session(engine) as session:
         user = session.query(Users).get(user_id)
         if user:
             return user.repositorys
-        else:
-            return []
+        return []
 
 
 def add_repository(repo_name: str, user_id: int) -> bool:
-    # Obtener información del repositorio mediante el formato "nombre/repositorio"
+    """
+    Add a repository to the database or its updated if it exists on the database 
+    and its added to the user.
+    Args:
+        repo_name (str): The name of the repository in the format "owner/repo".
+        user_id (int): The ID of the user who is adding the repository.
+
+    Returns:
+        bool: True if the repository was successfully added, False otherwise.
+    """
     api_url = f"https://api.github.com/repos/{repo_name}"
 
     try:
         with Session(engine) as session:
             # Hacer una solicitud GET a la API de GitHub con el encabezado de Autorización
-            response = requests.get(api_url, headers={"Authorization": f"token {github_token}"})
-            response.raise_for_status()  # Lanzar una excepción para respuestas incorrectas (4xx o 5xx)
-
+            try:
+                response = requests.get(api_url,
+                                        headers={"Authorization": f"token {github_token}"},
+                                        timeout=10)
+                response.raise_for_status()  # Lanzar una excepción para respuestas incorrectas
+                # Parsear la respuesta JSON
+                repo_data = response.json()
+            except requests.exceptions.RequestException:
+                return False
             # Parsear la respuesta JSON
-            repo_data = response.json()
             user = get_user_with_id(user_id, session)
             # Extraer la información adicional del repositorio
-            name, owner, forks, stars, default_branch, open_issues, creation_date, github_link = extract_data(repo_data)
-            new_repo = session.query(repository).filter_by(name=name, owner=owner).first()
+            name, owner, forks, stars, \
+            default_branch, open_issues, creation_date, github_link = extract_data(repo_data)
+
+            new_repo = session.query(Repository).filter_by(name=name, owner=owner).first()
             if new_repo is not None:
-                new_repo.name = name
-                new_repo.owner = owner
-                new_repo.forks = forks
-                new_repo.stars = stars
-                new_repo.default_branch = default_branch
-                new_repo.open_issues = open_issues
-                new_repo.creation_date = datetime.strptime(creation_date, "%Y-%m-%dT%H:%M:%SZ")
-                new_repo.github_link = github_link
-                # Update the last_update timestamp
-                new_repo.last_update = datetime.now()
-                # Commit the changes to the database
+                update_repository(int(new_repo.id))
+                #Comprobar si el usuario no tiene este repositorio ya.
                 if new_repo not in user.repositorys:
                     new_repo.times_added += 1
                     user.repositorys.append(new_repo)
                 session.commit()
                 return True
-            else:
-                # Crear una nueva instancia de repositorio con la información adicional
-                new_repo = create_new_repo(user_id, name, owner, forks, stars, default_branch, open_issues, creation_date, github_link)
-
-                # Obtener al usuario y agregar el nuevo repositorio a la lista
-                user.repositorys.append(new_repo)
-
-                # Agregar el nuevo repositorio a la sesión y confirmar los cambios
-                session.add(new_repo)
-                session.commit()
-
-                return True
-    except requests.exceptions.RequestException as e:
+            # Crear una nueva instancia de repositorio con la información adicional.
+            new_repo = create_new_repo(
+            user_id, name, owner, forks, stars,
+            default_branch, open_issues, creation_date, github_link
+            )# Obtener al usuario y agregar el nuevo repositorio a la lista.
+            user.repositorys.append(new_repo)
+            session.add(new_repo)
+            session.commit()
+            return True
+    except requests.exceptions.RequestException:
         return False
 
 def get_user_with_id(user_id,session):
-        return session.query(Users).filter_by(id=user_id).first()
-    
-def create_new_repo(user_id, name, owner, forks, stars, default_branch, open_issues, creation_date, github_link):
+    """
+    Retrieves a user with the specified user ID from the session.
+
+    Args:
+        user_id (int): The ID of the user to retrieve.
+        session (Session): The session object used for querying the database.
+
+    Returns:
+        User: The user object with the specified user ID, or None if no user is found.
+    """
+    return session.query(Users).filter_by(id=user_id).first()
+def create_new_repo(user_id, name, owner,
+                    forks, stars, default_branch,
+                    open_issues, creation_date, github_link):
     """
     Creates a new repository with the given parameters.
 
@@ -138,7 +156,7 @@ def create_new_repo(user_id, name, owner, forks, stars, default_branch, open_iss
     Returns:
         Repository: The newly created repository object.
     """
-    return repository(
+    return Repository(
                 name=name,
                 owner=owner,
                 forks=forks,
@@ -160,7 +178,8 @@ def extract_data(repo_data):
         repo_data (dict): A dictionary containing information about a repository.
         
     Returns:
-        tuple: A tuple containing the extracted data from the repository. The tuple contains the following elements:
+        tuple: A tuple containing the extracted data from the repository. 
+        The tuple contains the following elements:
             - name (str): The name of the repository.
             - owner (str): The owner of the repository.
             - forks (int): The number of forks the repository has.
@@ -181,24 +200,35 @@ def extract_data(repo_data):
     return name,owner,forks,stars,default_branch,open_issues,creation_date,github_link
 
 def update_repository(repo_id: int) -> bool:
+    """
+    Update the repository information in the database.
+
+    Args:
+        repo_id (int): The ID of the repository to be updated.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
     with Session(engine) as session:
         # Retrieve the repository from the database
-        repo = session.query(repository).filter_by(id=repo_id).first()
-
+        repo = session.query(Repository).filter_by(id=repo_id).first()
         if repo:
             try:
-                # Make an API request to get updated repository data
-                api_url = f"https://api.github.com/repos/{repo.owner}/{repo.name}"
-                response = requests.get(api_url, headers={"Authorization": f"token {github_token}"})
-                response.raise_for_status()
+                # Pedir la información de GitHub desde su API
+                try:
+                    api_url = f"https://api.github.com/repos/{repo.owner}/{repo.name}"
+                    response = requests.get(api_url,
+                                            headers={"Authorization": f"token {github_token}"},
+                                            timeout= 10)
+                    response.raise_for_status()
+                    repo_data = response.json()
+                except requests.exceptions.RequestException:
+                    return False
+                (name, owner, forks, stars,
+                default_branch, open_issues, creation_date, github_link) = extract_data(repo_data)
 
-                # Parse the response JSON
-                repo_data = response.json()
 
-                # Extract information from the API response
-                name, owner, forks, stars, default_branch, open_issues, creation_date, github_link = extract_data(repo_data)
-
-                # Update the repository information
+                # Actualizar la información del repositorio
                 repo.name = name
                 repo.owner = owner
                 repo.forks = forks
@@ -207,6 +237,7 @@ def update_repository(repo_id: int) -> bool:
                 repo.open_issues = open_issues
                 repo.creation_date = datetime.strptime(creation_date, "%Y-%m-%dT%H:%M:%SZ")
                 repo.github_link = github_link
+
                 # Update the last_update timestamp
                 repo.last_update = datetime.now()
 
@@ -214,7 +245,7 @@ def update_repository(repo_id: int) -> bool:
                 session.commit()
 
                 return True
-            except requests.exceptions.RequestException as e:
+            except requests.exceptions.RequestException:
                 return False
         else:
             return False
@@ -231,11 +262,9 @@ def get_user_id(name):
     Returns:
         int: The ID of the user.
     """
-
     with Session(engine) as session:
         user = session.query(Users).filter_by(name=name).first()
         return user.id
-    
 def add_user(name, password):
     """
     Adds a new user to the database with the given name and password.
@@ -281,14 +310,14 @@ def check_user_and_password(name, password):
     Returns:
         bool: True if the user and password match, False otherwise.
     """
-    #Check the user and password
+
     session = Session(engine)
     user = session.query(Users).filter_by(name=name, password=password).first()
     session.close()
 
     return user is not None
 
-def get_details_repositorie(id):
+def get_details_repositorie(repoid):
     """
     Retrieve details of a repository based on its ID.
 
@@ -300,7 +329,7 @@ def get_details_repositorie(id):
     """
 
     session = Session(engine)
-    repo = session.query(repository).filter_by(id=id).first()
+    repo = session.query(Repository).filter_by(id=repoid).first()
     session.close()
     return repo
 
@@ -314,8 +343,9 @@ def get_top_repositories():
     """
     with Session(engine) as session:
         query = (
-            session.query(repository,repository.name,repository.times_added,repository.github_link)
-            .order_by(desc(repository.times_added))
+            #Añadir mas elementos si se desea ampliar la información del top 3 de la pagina.
+            session.query(Repository,Repository.name,Repository.times_added,Repository.github_link)
+            .order_by(desc(Repository.times_added))
             .limit(3)
         )
 
